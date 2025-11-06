@@ -16,9 +16,7 @@ from app.models import (
 router = APIRouter(prefix="/items", tags=["Random Items Management"])
 
 
-@router.post(
-	"", response_model=ItemResponse, tags=["Random Items Management"]
-)
+@router.post("", response_model=ItemResponse)
 def add_item(item: Item):
 	if item.name in items_db:
 		raise HTTPException(
@@ -30,9 +28,7 @@ def add_item(item: Item):
 	return ItemResponse(message="Item added successfully", item=item.name)
 
 
-@router.get(
-	"", response_model=ItemListResponse, tags=["Random Items Management"]
-)
+@router.get("", response_model=ItemListResponse)
 def get_randomized_items():
 	randomized = items_db.copy()
 	random.shuffle(randomized)
@@ -43,15 +39,12 @@ def get_randomized_items():
 	)
 
 
-@router.put(
-	"/{update_item_name}",
-	response_model=ItemUpdateResponse,
-	tags=["Random Items Management"],
-)
+@router.put("/{update_item_name}", response_model=ItemUpdateResponse)
 def update_item(update_item_name: str, item: Item):
 	if update_item_name not in items_db:
 		raise HTTPException(
-			status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
+			status_code=status.HTTP_404_NOT_FOUND,
+			detail="Item not found",
 		)
 
 	if item.name in items_db:
@@ -70,15 +63,12 @@ def update_item(update_item_name: str, item: Item):
 	)
 
 
-@router.delete(
-	"/{items}",
-	response_model=ItemDeleteResponse,
-	tags=["Random Items Management"],
-)
+@router.delete("/{items}", response_model=ItemDeleteResponse)
 def delete_item(item: str):
 	if item not in items_db:
 		raise HTTPException(
-			status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
+			status_code=status.HTTP_404_NOT_FOUND,
+			detail="Item not found",
 		)
 
 	items_db.remove(item)
