@@ -13,7 +13,7 @@ tags_metadata = [
 	{
 		"name": "Random Items Management",
 		"description": "Create, shuffle, read, update and delete items",
-	}
+	},
 ]
 
 app = FastAPI(
@@ -106,7 +106,9 @@ def get_random_number_between(
 	}
 
 
-@app.post("/items", response_model=ItemResponse, tags=["Random Items Management"])
+@app.post(
+	"/items", response_model=ItemResponse, tags=["Random Items Management"]
+)
 def add_item(item: Item):
 	if item.name in items_db:
 		raise HTTPException(
@@ -115,24 +117,27 @@ def add_item(item: Item):
 		)
 
 	items_db.append(item.name)
-	return ItemResponse(
-		message="Item added successfully",
-		item=item.name
-	)
+	return ItemResponse(message="Item added successfully", item=item.name)
 
 
-@app.get("/items", response_model=ItemListResponse, tags=["Random Items Management"])
+@app.get(
+	"/items", response_model=ItemListResponse, tags=["Random Items Management"]
+)
 def get_randomized_items():
 	randomized = items_db.copy()
 	random.shuffle(randomized)
 	return ItemListResponse(
 		original_order=items_db,
 		randomized_order=randomized,
-		count=len(items_db)
+		count=len(items_db),
 	)
 
 
-@app.put("/items/{update_item_name}", response_model=ItemUpdateResponse, tags=["Random Items Management"])
+@app.put(
+	"/items/{update_item_name}",
+	response_model=ItemUpdateResponse,
+	tags=["Random Items Management"],
+)
 def update_item(update_item_name: str, item: Item):
 	if update_item_name not in items_db:
 		raise HTTPException(
@@ -151,11 +156,15 @@ def update_item(update_item_name: str, item: Item):
 	return ItemUpdateResponse(
 		message="Item updated successfully",
 		old_item=update_item_name,
-		new_item=item.name
+		new_item=item.name,
 	)
 
 
-@app.delete("/items/{items}", response_model=ItemDeleteResponse, tags=["Random Items Management"])
+@app.delete(
+	"/items/{items}",
+	response_model=ItemDeleteResponse,
+	tags=["Random Items Management"],
+)
 def delete_item(item: str):
 	if item not in items_db:
 		raise HTTPException(
@@ -167,5 +176,5 @@ def delete_item(item: str):
 	return ItemDeleteResponse(
 		message="Item deleted successfully",
 		deleted_item=item,
-		remaining_items_count=len(items_db)
+		remaining_items_count=len(items_db),
 	)
