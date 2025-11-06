@@ -11,3 +11,10 @@ wheels/
 
 # Others
 .ruff_cache/
+
+# Logs
+logs/
+*.log
+
+# Environment variables
+.env

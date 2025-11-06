@@ -1,0 +1,231 @@
+### Randomizer API - REST Client Tests
+### Make sure the server is running: make run
+
+@baseUrl = http://localhost:8000
+
+###############################################################################
+# Random Playground Endpoints
+###############################################################################
+
+### 1. Home - Welcome endpoint
+GET {{baseUrl}}/ HTTP/1.1
+
+### 2. Generate random number (1 to max_value)
+GET {{baseUrl}}/random/100 HTTP/1.1
+
+### 3. Generate random number with small max
+GET {{baseUrl}}/random/10 HTTP/1.1
+
+### 4. Generate random number between min and max
+GET {{baseUrl}}/random-between?min_value=1&max_value=99 HTTP/1.1
+
+### 5. Random between with custom range
+GET {{baseUrl}}/random-between?min_value=50&max_value=200 HTTP/1.1
+
+### 6. Random between with boundaries
+GET {{baseUrl}}/random-between?min_value=1&max_value=1000 HTTP/1.1
+
+###############################################################################
+# Items Management - CRUD Operations
+###############################################################################
+
+### 7. Add item - Apple
+POST {{baseUrl}}/items HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "apple"
+}
+
+### 8. Add item - Banana
+POST {{baseUrl}}/items HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "banana"
+}
+
+### 9. Add item - Orange
+POST {{baseUrl}}/items HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "orange"
+}
+
+### 10. Add item - Grape
+POST {{baseUrl}}/items HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "grape"
+}
+
+### 11. Add item - Strawberry
+POST {{baseUrl}}/items HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "strawberry"
+}
+
+### 12. Get all items (page 1) - Randomized order
+GET {{baseUrl}}/items HTTP/1.1
+
+### 13. Get items with pagination - page 1
+GET {{baseUrl}}/items?page=1 HTTP/1.1
+
+### 14. Get items with pagination - page 2
+GET {{baseUrl}}/items?page=2 HTTP/1.1
+
+### 15. Update item - Change "apple" to "green apple"
+PUT {{baseUrl}}/items/apple HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "green apple"
+}
+
+### 16. Delete item - Remove "banana"
+DELETE {{baseUrl}}/items/banana HTTP/1.1
+
+### 17. Get all items after deletion
+GET {{baseUrl}}/items HTTP/1.1
+
+###############################################################################
+# Error Scenarios - Testing validation
+###############################################################################
+
+### 18. Try to add duplicate item (should fail with 400)
+POST {{baseUrl}}/items HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "orange"
+}
+
+### 19. Try to add item with empty name (should fail with 422)
+POST {{baseUrl}}/items HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": ""
+}
+
+### 20. Try to add item with name too long (should fail with 422)
+POST {{baseUrl}}/items HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "this is a very long item name that exceeds the maximum allowed length of 100 characters and should fail validation"
+}
+
+### 21. Try to update non-existent item (should fail with 404)
+PUT {{baseUrl}}/items/nonexistent HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "updated"
+}
+
+### 22. Try to delete non-existent item (should fail with 404)
+DELETE {{baseUrl}}/items/nonexistent HTTP/1.1
+
+### 23. Try random with max_value = 0 (should fail with 400)
+GET {{baseUrl}}/random/0 HTTP/1.1
+
+### 24. Try random with negative max_value (should fail with 422)
+GET {{baseUrl}}/random/-5 HTTP/1.1
+
+### 25. Try random-between with min > max (should fail with 400)
+GET {{baseUrl}}/random-between?min_value=100&max_value=50 HTTP/1.1
+
+### 26. Try random-between with invalid range (should fail with 422)
+GET {{baseUrl}}/random-between?min_value=0&max_value=50 HTTP/1.1
+
+### 27. Try random-between exceeding max limit (should fail with 422)
+GET {{baseUrl}}/random-between?min_value=1&max_value=1001 HTTP/1.1
+
+###############################################################################
+# Batch Operations - Add multiple items for pagination testing
+###############################################################################
+
+### 28. Add multiple items - Watermelon
+POST {{baseUrl}}/items HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "watermelon"
+}
+
+### 29. Add multiple items - Pineapple
+POST {{baseUrl}}/items HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "pineapple"
+}
+
+### 30. Add multiple items - Mango
+POST {{baseUrl}}/items HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "mango"
+}
+
+### 31. Add multiple items - Kiwi
+POST {{baseUrl}}/items HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "kiwi"
+}
+
+### 32. Add multiple items - Peach
+POST {{baseUrl}}/items HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "peach"
+}
+
+### 33. Add multiple items - Cherry
+POST {{baseUrl}}/items HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "cherry"
+}
+
+### 34. Add multiple items - Blueberry
+POST {{baseUrl}}/items HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "blueberry"
+}
+
+### 35. Add multiple items - Raspberry
+POST {{baseUrl}}/items HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "raspberry"
+}
+
+### 36. Get all items after batch additions
+GET {{baseUrl}}/items HTTP/1.1
+
+###############################################################################
+# OpenAPI Documentation
+###############################################################################
+
+### 37. Get OpenAPI JSON schema
+GET {{baseUrl}}/openapi.json HTTP/1.1
+
+### 38. Access Interactive API Docs (Swagger UI)
+# Open in browser: http://localhost:8000/docs
+
+### 39. Access Alternative API Docs (ReDoc)
+# Open in browser: http://localhost:8000/redoc

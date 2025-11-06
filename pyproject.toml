@@ -6,6 +6,8 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.120.4",
+    "loguru>=0.7.3",
+    "python-decouple>=3.8",
     "uvicorn>=0.38.0",
 ]
 

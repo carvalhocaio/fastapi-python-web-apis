@@ -1,5 +1,5 @@
 run:
-	uv run uvicorn main:app --reload --port 8000
+	uv run uvicorn app.main:app --reload --port 8000
 
 lint:
 	ruff check . && ruff check . --diff
