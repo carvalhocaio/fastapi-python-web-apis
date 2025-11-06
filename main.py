@@ -5,7 +5,30 @@ from fastapi import FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-app = FastAPI()
+tags_metadata = [
+	{
+		"name": "Random Playground",
+		"description": "Generate random numbers",
+	},
+	{
+		"name": "Random Items Management",
+		"description": "Create, shuffle, read, update and delete items",
+	}
+]
+
+app = FastAPI(
+	title="Randomizer API",
+	description="Shuffle lists, pick random items, and generate random numbers.",
+	version="1.0.0",
+	openapi_tags=tags_metadata,
+)
+app.add_middleware(
+	CORSMiddleware,
+	allow_origins=["http://localhost:3000", "https://example.com"],
+	allow_credentials=True,
+	allow_methods=["GET", "POST", "PUT", "DELETE"],
+	allow_headers=["*"],
+)
 
 items_db = []
 
@@ -39,26 +62,17 @@ class ItemDeleteResponse(BaseModel):
 	remaining_items_count: int
 
 
-app.add_middleware(
-	CORSMiddleware,
-	allow_origins=["*"],
-	allow_credentials=True,
-	allow_methods=["*"],
-	allow_headers=["*"],
-)
-
-
-@app.get("/")
-def home():
+@app.get("/", tags=["Random Playground"])
+async def home():
 	return {"message": "Welcome to the Randomizer API"}
 
 
-@app.get("/random/{max_value}")
-def get_random_number(max_value: int):
+@app.get("/random/{max_value}", tags=["Random Playground"])
+async def get_random_number(max_value: int):
 	return {"max": max_value, "random_number": random.randint(1, max_value)}
 
 
-@app.get("/random-between")
+@app.get("/random-between", tags=["Random Playground"])
 def get_random_number_between(
 	min_value: Annotated[
 		int,
@@ -92,7 +106,7 @@ def get_random_number_between(
 	}
 
 
-@app.post("/items", response_model=ItemResponse)
+@app.post("/items", response_model=ItemResponse, tags=["Random Items Management"])
 def add_item(item: Item):
 	if item.name in items_db:
 		raise HTTPException(
@@ -107,7 +121,7 @@ def add_item(item: Item):
 	)
 
 
-@app.get("/items", response_model=ItemListResponse)
+@app.get("/items", response_model=ItemListResponse, tags=["Random Items Management"])
 def get_randomized_items():
 	randomized = items_db.copy()
 	random.shuffle(randomized)
@@ -118,7 +132,7 @@ def get_randomized_items():
 	)
 
 
-@app.put("/items/{update_item_name}", response_model=ItemUpdateResponse)
+@app.put("/items/{update_item_name}", response_model=ItemUpdateResponse, tags=["Random Items Management"])
 def update_item(update_item_name: str, item: Item):
 	if update_item_name not in items_db:
 		raise HTTPException(
@@ -141,7 +155,7 @@ def update_item(update_item_name: str, item: Item):
 	)
 
 
-@app.delete("/items/{items}", response_model=ItemDeleteResponse)
+@app.delete("/items/{items}", response_model=ItemDeleteResponse, tags=["Random Items Management"])
 def delete_item(item: str):
 	if item not in items_db:
 		raise HTTPException(
