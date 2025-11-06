@@ -1,73 +1,134 @@
 # Randomizer API
 
-A FastAPI-based REST API for generating random numbers and managing
-randomizable item lists. This project demonstrates modern Python API
-development with FastAPI, including proper data validation, CORS
-configuration, and comprehensive API documentation.
+A production-ready FastAPI application for generating random numbers and managing randomizable item lists. This project demonstrates modern Python API development with a modular architecture, SQLite database, environment-based configuration, comprehensive logging, and professional development practices.
 
 ## Features
 
-- **Random Number Generation**
-  - Generate random numbers up to a maximum value
-  - Generate random numbers within a specific range (min-max)
-  - Input validation and error handling
+### Random Number Generation
+- Generate random numbers up to a maximum value
+- Generate random numbers within a specific range (min-max)
+- Input validation and error handling
+- Comprehensive logging of all operations
 
-- **Item Management**
-  - Create items with validation
-  - List items with randomized ordering
-  - Update existing items
-  - Delete items
-  - Automatic duplicate detection
+### Item Management
+- **CRUD Operations**: Create, Read, Update, Delete items
+- **SQLite Database**: In-memory database for fast operations
+- **Pagination**: Configurable pagination (21 items per page by default)
+- **Data Validation**: Pydantic models with field validation
+- **Duplicate Detection**: Unique constraints enforced at database level
+- **Randomized Ordering**: Get items in both original and shuffled order
 
-- **Additional Features**
-  - Interactive API documentation (Swagger UI)
-  - CORS middleware for cross-origin requests
-  - Pydantic models for request/response validation
-  - Proper HTTP status codes and error messages
-  - Tagged endpoints for organized documentation
+### Architecture & Infrastructure
+- **Modular Structure**: Organized codebase with separation of concerns
+- **Environment Configuration**: python-decouple for flexible settings
+- **Structured Logging**: Loguru with console and file output
+- **CORS Middleware**: Configured for cross-origin requests
+- **API Documentation**: Auto-generated Swagger UI and ReDoc
+- **REST Client Testing**: Comprehensive test suite in `client.http`
 
-## Requirements
+## Tech Stack
 
-- Python 3.10+
-- FastAPI
-- Pydantic
-- Uvicorn (ASGI server)
+- **Python 3.10+**
+- **FastAPI** - Modern, fast web framework
+- **SQLite** - In-memory database
+- **Pydantic** - Data validation
+- **Uvicorn** - ASGI server
+- **python-decouple** - Environment-based configuration
+- **Loguru** - Structured logging
+- **uv** - Fast Python package installer
 
 ## Installation
 
-1. Clone the repository:
+### Prerequisites
+- Python 3.10 or higher
+- [uv](https://github.com/astral-sh/uv) - Fast Python package installer (recommended)
+
+### Setup
+
+1. **Clone the repository:**
 ```bash
 git clone https://github.com/carvalhocaio/fastapi-python-web-apis
 cd fastapi-python-web-apis
 ```
 
-2. Create and activate a virtual environment:
+2. **Create and activate virtual environment:**
 ```bash
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 ```
 
-3. Install dependencies:
+3. **Install dependencies:**
+
+Using uv (recommended):
 ```bash
-pip install fastapi uvicorn pydantic
+uv pip install -r pyproject.toml
+```
+
+Or using pip:
+```bash
+pip install fastapi uvicorn pydantic python-decouple loguru
+```
+
+4. **Configure environment variables:**
+
+Copy the example environment file:
+```bash
+cp .env.example .env
+```
+
+Edit `.env` to customize your settings (optional, defaults are provided):
+```env
+API_TITLE=Randomizer API
+API_VERSION=1.0.0
+ALLOWED_ORIGINS=http://localhost:3000,https://example.com
+ITEMS_PER_PAGE=21
+LOG_LEVEL=INFO
+MAX_ITEM_NAME_LENGTH=100
 ```
 
 ## Usage
 
 ### Starting the Server
 
-Run the development server with:
+Using Makefile (recommended):
 ```bash
-uvicorn main:app --reload
+make run
+```
+
+Or directly with uvicorn:
+```bash
+uvicorn app.main:app --reload --port 8000
 ```
 
 The API will be available at `http://localhost:8000`
 
+### Other Make Commands
+
+```bash
+make lint          # Run code linter (ruff)
+```
+
 ### Interactive API Documentation
 
-Once the server is running, access the interactive documentation at:
-- Swagger UI: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
+Once the server is running, access the documentation:
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+- **OpenAPI JSON**: http://localhost:8000/openapi.json
+
+### Testing with REST Client
+
+The project includes a comprehensive `client.http` file for testing all endpoints using the [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) VSCode extension.
+
+1. Install the REST Client extension in VSCode
+2. Open `client.http`
+3. Click "Send Request" above any endpoint
+4. View responses in the side panel
+
+The file includes 39+ test cases covering:
+- All CRUD operations
+- Error scenarios
+- Validation testing
+- Pagination examples
 
 ## API Endpoints
 
@@ -148,14 +209,25 @@ Add a new item to the list.
 - Duplicate names are not allowed
 
 #### `GET /items`
-Retrieve all items with both original and randomized ordering.
+Retrieve paginated items with both original and randomized ordering.
+
+**Query Parameters:**
+- `page` (optional, default=1): Page number (must be >= 1)
+
+**Example:**
+```bash
+curl "http://localhost:8000/items?page=1"
+```
 
 **Response:**
 ```json
 {
   "original_order": ["Apple", "Banana", "Cherry"],
   "randomized_order": ["Cherry", "Apple", "Banana"],
-  "count": 3
+  "count": 3,
+  "page": 1,
+  "per_page": 21,
+  "total_pages": 1
 }
 ```
 
@@ -196,15 +268,39 @@ Delete an item from the list.
 }
 ```
 
+## Logging
+
+The application uses **Loguru** for structured logging with:
+
+- **Console Output**: Colored, formatted logs in the terminal
+- **File Output**: Persistent logs in `logs/app.log`
+  - Rotation: 500 MB per file
+  - Retention: 10 days
+  - Format: JSON-compatible structured logs
+
+**Log Levels**: Configurable via `LOG_LEVEL` in `.env` (DEBUG, INFO, WARNING, ERROR)
+
+Example log entry:
+```
+2025-11-06 10:01:38 | INFO     | app.routers.items:add_item:26 - Attempting to add item: apple
+2025-11-06 10:01:38 | SUCCESS  | app.routers.items:add_item:33 - Item added successfully: apple
+```
+
 ## CORS Configuration
 
-The API is configured with CORS middleware allowing:
-- Origins: `http://localhost:3000`, `https://example.com`
-- Credentials: Enabled
-- Methods: GET, POST, PUT, DELETE
-- Headers: All
+CORS is configured via environment variables in `.env`:
 
-To modify CORS settings, edit the middleware configuration in `main.py:25-31`.
+```env
+ALLOWED_ORIGINS=http://localhost:3000,https://example.com
+```
+
+Default settings:
+- **Origins**: Comma-separated list from environment
+- **Credentials**: Enabled
+- **Methods**: GET, POST, PUT, DELETE
+- **Headers**: All (`*`)
+
+Middleware configuration: `app/main.py:24-32`
 
 ## Error Handling
 
@@ -213,6 +309,7 @@ The API uses standard HTTP status codes:
 - `400 Bad Request`: Invalid input or duplicate item
 - `404 Not Found`: Item not found
 - `409 Conflict`: Item name already exists
+- `422 Unprocessable Entity`: Validation errors
 
 Example error response:
 ```json
@@ -225,18 +322,155 @@ Example error response:
 
 ```
 fastapi-python-web-apis/
-├── main.py          # Main application file with all endpoints
-└── README.md        # This file
+├── app/
+│   ├── __init__.py
+│   ├── main.py              # FastAPI application entry point
+│   ├── config.py            # Environment-based configuration
+│   ├── database.py          # SQLite database setup
+│   ├── logger.py            # Loguru logging configuration
+│   ├── models/
+│   │   ├── __init__.py
+│   │   └── item.py          # Pydantic models for items
+│   └── routers/
+│       ├── __init__.py
+│       ├── items.py         # Item management endpoints
+│       └── random.py        # Random number endpoints
+├── logs/
+│   └── app.log              # Application logs (auto-generated)
+├── .env                     # Environment variables (create from .env.example)
+├── .env.example             # Example environment configuration
+├── .gitignore
+├── client.http              # REST Client test suite
+├── Makefile                 # Build commands (run, lint)
+├── pyproject.toml           # Project dependencies
+└── README.md                # This file
 ```
+
+## Database
+
+The application uses **SQLite in-memory database** for development:
+
+- **Type**: In-memory (`:memory:`)
+- **Schema**: Auto-initialized on startup
+- **Context Manager**: Safe transaction handling with `get_cursor()`
+- **Features**:
+  - Unique constraints on item names
+  - Automatic timestamps
+  - Transaction rollback on errors
+
+**Note**: As an in-memory database, all data is lost when the application stops. For production, consider migrating to PostgreSQL or MySQL with persistent storage.
+
+### Database Schema
+
+```sql
+CREATE TABLE items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
+```
+
+## Configuration
+
+All configuration is managed through environment variables using `python-decouple`:
+
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `API_TITLE` | string | `Randomizer API` | API title in docs |
+| `API_DESCRIPTION` | string | `Shuffle lists...` | API description |
+| `API_VERSION` | string | `1.0.0` | API version |
+| `ALLOWED_ORIGINS` | CSV | `http://localhost:3000,...` | CORS allowed origins |
+| `ITEMS_PER_PAGE` | int | `21` | Items per page for pagination |
+| `MAX_ITEM_NAME_LENGTH` | int | `100` | Maximum item name length |
+| `LOG_LEVEL` | string | `INFO` | Logging level |
+
+Configuration file: `app/config.py`
 
 ## Development
 
+### Code Quality
+
+The project uses **Ruff** for linting:
+
+```bash
+make lint              # Check code style
+ruff check .           # Alternative command
+ruff check . --fix     # Auto-fix issues
+```
+
 ### Adding New Endpoints
 
-1. Define Pydantic models for request/response validation
-2. Create the endpoint function with appropriate decorators
-3. Add proper tags for documentation organization
-4. Implement error handling with HTTPException
+1. **Create/Update Router**: Add endpoint in appropriate router (`app/routers/`)
+2. **Define Models**: Create Pydantic models in `app/models/`
+3. **Add Logging**: Use `logger.info()`, `logger.warning()`, etc.
+4. **Database Operations**: Use `get_cursor()` context manager
+5. **Error Handling**: Raise `HTTPException` with appropriate status codes
+6. **Documentation**: Add docstrings and tag endpoints
+7. **Testing**: Add test cases to `client.http`
+
+### Best Practices
+
+- ✅ Use type hints for all function parameters and returns
+- ✅ Validate input with Pydantic models
+- ✅ Log important operations and errors
+- ✅ Use database context managers for safe transactions
+- ✅ Return appropriate HTTP status codes
+- ✅ Keep routers focused and organized
+- ✅ Use environment variables for configuration
+
+## Quick Reference
+
+### Common Operations
+
+```bash
+# Start the server
+make run
+
+# Run linter
+make lint
+
+# View logs
+tail -f logs/app.log
+
+# Test all endpoints
+# Open client.http in VSCode with REST Client extension
+
+# Check API documentation
+# Open http://localhost:8000/docs in browser
+```
+
+### Example Requests
+
+```bash
+# Add an item
+curl -X POST http://localhost:8000/items \
+  -H "Content-Type: application/json" \
+  -d '{"name":"apple"}'
+
+# Get items (with pagination)
+curl http://localhost:8000/items?page=1
+
+# Generate random number
+curl http://localhost:8000/random/100
+
+# Generate random in range
+curl "http://localhost:8000/random-between?min_value=1&max_value=100"
+```
+
+## Recent Improvements
+
+### Version 1.0.0
+- ✅ Modular architecture with separation of concerns
+- ✅ SQLite in-memory database replacing simple list
+- ✅ Environment-based configuration with python-decouple
+- ✅ Structured logging with Loguru (console + file)
+- ✅ Pagination support (21 items per page)
+- ✅ Comprehensive test suite in `client.http`
+- ✅ Input validation improvements
+- ✅ Database context managers for safe transactions
+- ✅ Code quality improvements with Ruff linting
+- ✅ Enhanced error handling and HTTP status codes
+- ✅ Professional project structure
 
 ## Contributing
 
@@ -254,8 +488,18 @@ This project is open source and available under the [MIT License](LICENSE).
 
 Built with FastAPI and Python
 
+**Repository**: [github.com/carvalhocaio/fastapi-python-web-apis](https://github.com/carvalhocaio/fastapi-python-web-apis)
+
 ## Acknowledgments
 
 - [FastAPI](https://fastapi.tiangolo.com/) - Modern, fast web framework for building APIs
 - [Pydantic](https://docs.pydantic.dev/) - Data validation using Python type annotations
 - [Uvicorn](https://www.uvicorn.org/) - Lightning-fast ASGI server
+- [python-decouple](https://github.com/HBNetwork/python-decouple) - Strict separation of settings from code
+- [Loguru](https://github.com/Delgan/loguru) - Python logging made simple
+- [SQLite](https://www.sqlite.org/) - Self-contained, serverless database engine
+- [uv](https://github.com/astral-sh/uv) - Fast Python package installer
+
+---
+
+⭐ If you find this project helpful, please consider giving it a star on GitHub!
